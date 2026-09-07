@@ -181,12 +181,21 @@ const NAV = [
     { id: "statements", label: "Statements",        icon: "statements" },
   ]},
   { group: "Help", items: [
-    { id: "products", label: "Products & services", icon: "grid", isNew: true },
+    { id: "products", label: "Products", icon: "grid", isNew: true },
     { id: "locator",  label: "Branches & agents", icon: "locator", isNew: true },
     { id: "support",  label: "Support",           icon: "support", isNew: true },
     { id: "settings", label: "Settings",          icon: "settings" },
   ]},
 ];
+
+/* Routes that are a single task — a payment, a form, a document to read.
+   These get a narrower, centred column; everything else runs full width. */
+const NARROW_ROUTES = new Set([
+  "flow", "transfer", "airtime", "utility", "take-a-loan",
+  "templates/add", "templates/edit", "calendar/add", "calendar/edit",
+  "terms-of-use", "report-fraud", "change-password", "devices",
+  "edit-profile", "language",
+]);
 
 const BOTNAV = [
   { id: "dashboard",    label: "Home",     icon: "home" },
@@ -382,7 +391,7 @@ function shell(inner) {
           </button>
         </div>
       </header>
-      <main class="page">${inner}</main>
+      <main class="page ${NARROW_ROUTES.has(S.route) ? "page-narrow" : ""}">${inner}</main>
     </div>
 
     <nav class="botnav">${botnavItems()}</nav>
