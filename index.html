@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MyABZ — enhancement preview</title>
+<meta name="description" content="Preview of the enhanced MyABZ online banking interface, for internal review.">
+<meta name="theme-color" content="#00375B">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+  @font-face { font-family:"FiraGO"; font-weight:400; font-display:swap;
+    src:url("prototype/fonts/firago-400.woff2") format("woff2"); }
+  @font-face { font-family:"FiraGO"; font-weight:500; font-display:swap;
+    src:url("prototype/fonts/firago-500.woff2") format("woff2"); }
+  @font-face { font-family:"FiraGO"; font-weight:600; font-display:swap;
+    src:url("prototype/fonts/firago-600.woff2") format("woff2"); }
+  @font-face { font-family:"FiraGO"; font-weight:700; font-display:swap;
+    src:url("prototype/fonts/firago-700.woff2") format("woff2"); }
+
+  :root{
+    --blue:#005086; --blue-600:#003D66; --blue-050:#EEF4F8;
+    --navy:#00375B; --orange:#F27126;
+    --ink:#16182F; --ink-2:#414A63; --ink-3:#6A7389; --ink-4:#98A0B3;
+    --line:#DFE3EC; --line-2:#EBEEF4; --surface:#fff; --page:#F0F3F7;
+    --ok:#1A7F4B; --ok-050:#E7F4EC;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--ink);
+    font-family:"FiraGO","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.55;
+    -webkit-font-smoothing:antialiased}
+
+  header{background:var(--navy);color:#fff;border-bottom:4px solid var(--orange);
+    background-image:radial-gradient(circle at 88% 0%,rgba(0,80,134,.85),transparent 60%)}
+  .in{max-width:920px;margin:0 auto;padding:0 22px}
+  header .in{padding-top:40px;padding-bottom:38px}
+  header img{height:38px;width:auto;display:block;margin-bottom:26px}
+  h1{font-size:clamp(28px,5vw,40px);line-height:1.12;margin:0 0 12px;font-weight:600;letter-spacing:-.015em}
+  .lede{color:#BCCADD;font-size:18px;margin:0;max-width:54ch}
+
+  main{padding:34px 0 70px}
+  h2{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--blue);
+    font-weight:700;margin:0 0 4px}
+  .rule{height:2px;background:var(--line);margin:0 0 20px}
+
+  .cards{display:grid;gap:16px;grid-template-columns:1fr;margin-bottom:34px}
+  @media(min-width:720px){.cards{grid-template-columns:1fr 1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:24px;display:flex;flex-direction:column;
+    box-shadow:0 1px 2px rgba(22,24,47,.06),0 8px 24px -14px rgba(22,24,47,.18)}
+  .card h3{margin:0 0 4px;font-size:20px;font-weight:600;letter-spacing:-.01em}
+  .card .tag{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;
+    color:var(--blue);margin-bottom:9px}
+  .card p{margin:0 0 18px;color:var(--ink-3);font-size:15px}
+  .card .btn{margin-top:auto}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    padding:13px 22px;border-radius:6px;font-weight:600;font-size:15.5px;
+    text-decoration:none;border:1px solid transparent;transition:background .13s,border-color .13s}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-primary:hover{background:var(--blue-600)}
+  .btn-secondary{background:#fff;color:var(--ink);border-color:var(--line)}
+  .btn-secondary:hover{border-color:var(--ink-4);background:#F5F7FA}
+  .btn-block{width:100%}
+
+  .note{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);
+    border-radius:0 6px 6px 0;padding:16px 20px;margin:0 0 20px;font-size:15px;color:var(--ink-2)}
+  .note b{color:var(--ink)}
+  .note.ok{border-left-color:var(--ok);background:var(--ok-050)}
+
+  ul.feat{list-style:none;padding:0;margin:0;display:grid;gap:9px;
+    grid-template-columns:1fr}
+  @media(min-width:640px){ul.feat{grid-template-columns:1fr 1fr}}
+  ul.feat li{background:#fff;border:1px solid var(--line);border-radius:6px;
+    padding:12px 15px;font-size:15px;display:flex;gap:10px;align-items:flex-start}
+  ul.feat .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);
+    margin-top:8px;flex:none}
+  ul.feat b{display:block;font-weight:600}
+  ul.feat span{color:var(--ink-3);font-size:13.5px}
+
+  footer{border-top:1px solid var(--line);margin-top:44px;padding-top:22px;
+    color:var(--ink-4);font-size:13.5px}
+  a{color:var(--blue)}
+  code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;
+    background:#EDF1F6;padding:.1em .4em;border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="in">
+    <img src="logo.png" alt="AB Bank" style="filter:brightness(0) invert(1)">
+    <h1>MyABZ enhancement preview</h1>
+    <p class="lede">A working preview of the redesigned online banking interface,
+      for the team to click through and comment on.</p>
+  </div>
+</header>
+
+<main class="in">
+
+  <div class="note ok">
+    <b>Sample data only.</b> Nothing here connects to a real system. The accounts,
+    balances, names and transactions are made up for the demo &mdash; you can tap anything
+    without consequence.
+  </div>
+
+  <h2>Open the preview</h2>
+  <div class="rule"></div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">Start here</div>
+      <h3>Clickable prototype</h3>
+      <p>The full interface, every screen, click straight through. Best on your phone &mdash;
+        this was designed for a small Android screen first.</p>
+      <a class="btn btn-primary btn-block" href="prototype/index.html">Open the prototype</a>
+    </div>
+    <div class="card">
+      <div class="tag">Same screens, real code</div>
+      <h3>React build</h3>
+      <p>The production codebase running on mock data. Identical to the prototype &mdash;
+        useful if you want to see the real thing rather than a mock-up.</p>
+      <a class="btn btn-secondary btn-block" href="app/">Open the React build</a>
+    </div>
+  </div>
+
+  <h2>What&rsquo;s new</h2>
+  <div class="rule"></div>
+  <ul class="feat">
+    <li><span class="dot"></span><span><b>Mobile money transfers</b>
+      Send to Airtel, MTN or Zamtel. The network is worked out from the number.</span></li>
+    <li><span class="dot"></span><span><b>Airtime &amp; data</b>
+      Top up any network, or buy a bundle, straight from your account.</span></li>
+    <li><span class="dot"></span><span><b>Foreign exchange</b>
+      See today&rsquo;s rates and buy or sell currency without going into a branch.</span></li>
+    <li><span class="dot"></span><span><b>ZRA, NAPSA and NHIMA</b>
+      Statutory payments alongside the usual bills.</span></li>
+    <li><span class="dot"></span><span><b>Built for a phone</b>
+      Checked on every screen size from 320px up. Most customers are on a small Android.</span></li>
+    <li><span class="dot"></span><span><b>Branch &amp; agent finder</b>
+      Branches plus the Kazang and 543 Konse Konse agent network.</span></li>
+    <li><span class="dot"></span><span><b>Clearer payments</b>
+      You always see the recipient&rsquo;s name and the fee before you authorise.</span></li>
+    <li><span class="dot"></span><span><b>First-login experience</b>
+      For customers the contact centre has just registered.</span></li>
+  </ul>
+
+  <h2 style="margin-top:34px">Things to look at</h2>
+  <div class="rule"></div>
+  <div class="note">
+    Worth clicking through specifically:
+    <b>Transfer &rarr; To a mobile money wallet</b> (type <code>0966410228</code> and watch the
+    network and recipient name fill themselves in),
+    <b>Templates</b> (pick one and it fills everything except the amount),
+    and <b>Settings &rarr; Language</b>.
+    Switch to the business profile from the top-left to see payment approvals.
+  </div>
+
+  <h2 style="margin-top:34px">Telling us what to change</h2>
+  <div class="rule"></div>
+  <div class="note">
+    Note the <b>screen name</b> and what felt wrong &mdash; wording, order of fields, anything
+    missing or confusing. Screenshots help. Nothing here is final; it is much cheaper to change
+    now than after the backend is built.
+  </div>
+
+  <footer>
+    Internal preview for AB Bank Zambia &middot; sample data, not a live system.<br>
+    Interface prepared September 2026.
+  </footer>
+</main>
+
+</body>
+</html>

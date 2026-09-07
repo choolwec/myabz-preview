@@ -1,0 +1,65 @@
+/* Icon set — 20px stroke icons, currentColor. Kept deliberately plain:
+   line icons in the same weight as the rest of the interface. */
+const ICONS = {
+  home:      '<path d="M3 9.5 10 4l7 5.5V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z"/>',
+  accounts:  '<rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/><path d="M2.5 8.5h15"/>',
+  transfer:  '<path d="M4 7h11M12 4l3 3-3 3M16 13H5M8 10l-3 3 3 3"/>',
+  history:   '<circle cx="10" cy="10" r="7"/><path d="M10 6v4.2l2.8 1.7"/>',
+  approvals: '<path d="M4 5.5h12M4 10h12M4 14.5h7"/><circle cx="15" cy="14.5" r="2.6"/><path d="M13.9 14.5l.8.8 1.6-1.7"/>',
+  templates: '<path d="M5 3.5h10a1 1 0 0 1 1 1V16l-3-2-3 2-3-2-3 2V4.5a1 1 0 0 1 1-1z"/>',
+  loans:     '<circle cx="10" cy="10" r="7"/><path d="M10 6.2v7.6M12 8.1c0-1-.9-1.6-2-1.6s-2 .6-2 1.5c0 2.2 4 1.2 4 3.4 0 1-.9 1.6-2 1.6s-2-.6-2-1.6"/>',
+  scheduled: '<rect x="3" y="4.5" width="14" height="12.5" rx="1.5"/><path d="M3 8.5h14M7 2.8v3.2M13 2.8v3.2"/>',
+  statements:'<path d="M5 2.8h6.5L15 6.3V17a.7.7 0 0 1-.7.7H5a.7.7 0 0 1-.7-.7V3.5A.7.7 0 0 1 5 2.8z"/><path d="M11 2.9V6.5h3.8M7 11h6M7 14h4"/>',
+  fx:        '<path d="M3 7h9M9.5 4 12.5 7l-3 3"/><path d="M17 13H8M10.5 10 7.5 13l3 3"/>',
+  locator:   '<path d="M10 17.5s5.5-4.9 5.5-9a5.5 5.5 0 1 0-11 0c0 4.1 5.5 9 5.5 9z"/><circle cx="10" cy="8.5" r="2"/>',
+  support:   '<circle cx="10" cy="10" r="7.2"/><path d="M8 8a2 2 0 1 1 2.7 1.9c-.5.2-.7.6-.7 1.1v.4"/><circle cx="10" cy="14" r=".6" fill="currentColor" stroke="none"/>',
+  settings:  '<circle cx="10" cy="10" r="2.5"/><path d="M15.6 11.8a1.3 1.3 0 0 0 .26 1.43l.05.05a1.55 1.55 0 1 1-2.2 2.2l-.05-.05a1.3 1.3 0 0 0-1.43-.26 1.3 1.3 0 0 0-.79 1.19v.14a1.55 1.55 0 1 1-3.1 0v-.07a1.3 1.3 0 0 0-.85-1.19 1.3 1.3 0 0 0-1.43.26l-.05.05a1.55 1.55 0 1 1-2.2-2.2l.05-.05a1.3 1.3 0 0 0 .26-1.43 1.3 1.3 0 0 0-1.19-.79H2.8a1.55 1.55 0 1 1 0-3.1h.07a1.3 1.3 0 0 0 1.19-.85 1.3 1.3 0 0 0-.26-1.43l-.05-.05a1.55 1.55 0 1 1 2.2-2.2l.05.05a1.3 1.3 0 0 0 1.43.26h.06a1.3 1.3 0 0 0 .79-1.19V2.8a1.55 1.55 0 1 1 3.1 0v.07a1.3 1.3 0 0 0 .79 1.19 1.3 1.3 0 0 0 1.43-.26l.05-.05a1.55 1.55 0 1 1 2.2 2.2l-.05.05a1.3 1.3 0 0 0-.26 1.43v.06a1.3 1.3 0 0 0 1.19.79h.14a1.55 1.55 0 1 1 0 3.1h-.07a1.3 1.3 0 0 0-1.19.79z"/>',
+  bell:      '<path d="M15 7.3a5 5 0 0 0-10 0c0 5.2-2 6.7-2 6.7h14s-2-1.5-2-6.7z"/><path d="M11.4 17a1.6 1.6 0 0 1-2.8 0"/>',
+  bank:      '<path d="M3 8.2 10 4l7 4.2M4.5 8.5v6.8M8.2 8.5v6.8M11.8 8.5v6.8M15.5 8.5v6.8M2.8 16.6h14.4"/>',
+  phone:     '<rect x="5.5" y="2.5" width="9" height="15" rx="1.6"/><path d="M8.6 15.2h2.8"/>',
+  airtime:   '<path d="M10 2.6v3M10 14.4v3M4.5 10h-2M17.5 10h-2M6.1 6.1 4.7 4.7M15.3 15.3l-1.4-1.4M6.1 13.9l-1.4 1.4M15.3 4.7l-1.4 1.4"/><circle cx="10" cy="10" r="3"/>',
+  bill:      '<path d="M4.5 2.8h11v14.4l-2-1.4-1.8 1.4-1.7-1.4-1.8 1.4-2-1.4z"/><path d="M7.5 7h5M7.5 10.5h3"/>',
+  own:       '<rect x="2.5" y="5" width="15" height="10" rx="1.5"/><path d="M6.5 9.5h7M11 7l2.5 2.5L11 12"/>',
+  plus:      '<path d="M10 4.5v11M4.5 10h11"/>',
+  search:    '<circle cx="9" cy="9" r="5.5"/><path d="M13.2 13.2 17 17"/>',
+  chevron:   '<path d="M7.5 4 13 10l-5.5 6"/>',
+  chevronDown:'<path d="M5 8l5 5 5-5"/>',
+  back:      '<path d="M12.5 4 7 10l5.5 6"/>',
+  check:     '<path d="M4.5 10.5 8 14l7.5-8"/>',
+  checkBig:  '<path d="M5 12.5 9 16.5l10-11"/>',
+  close:     '<path d="M5 5l10 10M15 5L5 15"/>',
+  download:  '<path d="M10 3v9M6.5 8.8 10 12.3l3.5-3.5M4 15.5h12"/>',
+  filter:    '<path d="M3 5.5h14M5.5 10h9M8.5 14.5h3"/>',
+  arrowUp:   '<path d="M10 15.5v-11M6 8.5 10 4.5l4 4"/>',
+  arrowDown: '<path d="M10 4.5v11M6 11.5l4 4 4-4"/>',
+  info:      '<circle cx="10" cy="10" r="7.2"/><path d="M10 9.2v4.2"/><circle cx="10" cy="6.7" r=".7" fill="currentColor" stroke="none"/>',
+  warn:      '<path d="M10 3.2 17.5 16.4H2.5z"/><path d="M10 8v3.4"/><circle cx="10" cy="13.9" r=".7" fill="currentColor" stroke="none"/>',
+  shield:    '<path d="M10 2.8 4.5 5v4.6c0 3.5 2.3 6.6 5.5 7.6 3.2-1 5.5-4.1 5.5-7.6V5z"/><path d="M7.7 9.8 9.4 11.5l3-3.2"/>',
+  lock:      '<rect x="4.5" y="8.5" width="11" height="8.2" rx="1.4"/><path d="M7 8.5V6.4a3 3 0 0 1 6 0v2.1"/>',
+  eye:       '<path d="M1.8 10S4.8 4.8 10 4.8 18.2 10 18.2 10 15.2 15.2 10 15.2 1.8 10 1.8 10z"/><circle cx="10" cy="10" r="2.3"/>',
+  eyeOff:    '<path d="M8 4.9A6.4 6.4 0 0 1 10 4.8c5.2 0 8.2 5.2 8.2 5.2a13.7 13.7 0 0 1-2.4 3M5.5 6.2A13.4 13.4 0 0 0 1.8 10S4.8 15.2 10 15.2a7.5 7.5 0 0 0 3.2-.7"/><path d="M3 3l14 14"/>',
+  fingerprint:'<path d="M6.2 9.4a3.8 3.8 0 0 1 7.6 0v1.2a10 10 0 0 1-.7 3.7"/><path d="M10 9.2v2.2c0 1.6-.3 3.1-.9 4.5"/><path d="M3.6 7.4a7.4 7.4 0 0 1 12.8 0"/><path d="M6.7 15.8a9 9 0 0 0 1.1-3.3"/>',
+  user:      '<circle cx="10" cy="7" r="3.2"/><path d="M4.2 16.6a6 6 0 0 1 11.6 0"/>',
+  logout:    '<path d="M8 5.5V3.8h7.5v12.4H8V14.5M11 10H3.2M5.8 7.2 3 10l2.8 2.8"/>',
+  copy:      '<rect x="7" y="7" width="9.5" height="9.5" rx="1.3"/><path d="M13 7V4.8a1.3 1.3 0 0 0-1.3-1.3H4.8A1.3 1.3 0 0 0 3.5 4.8v6.9A1.3 1.3 0 0 0 4.8 13H7"/>',
+  share:     '<circle cx="14.5" cy="4.8" r="2.3"/><circle cx="5.5" cy="10" r="2.3"/><circle cx="14.5" cy="15.2" r="2.3"/><path d="M7.5 8.9l5-2.9M7.5 11.1l5 2.9"/>',
+  clock:     '<circle cx="10" cy="10" r="7"/><path d="M10 5.8V10l2.8 1.7"/>',
+  refresh:   '<path d="M16.5 8.5A6.6 6.6 0 0 0 5.2 5.8L3.5 7.4"/><path d="M3.5 11.5a6.6 6.6 0 0 0 11.3 2.7l1.7-1.6"/><path d="M3.5 4v3.4h3.4M16.5 16v-3.4h-3.4"/>',
+  wallet:    '<path d="M3 6.2A1.7 1.7 0 0 1 4.7 4.5H14a1 1 0 0 1 1 1v1.2"/><rect x="3" y="6.2" width="14" height="9.3" rx="1.5"/><circle cx="13.4" cy="10.9" r="1.1" fill="currentColor" stroke="none"/>',
+  building:  '<rect x="4" y="3" width="12" height="14" rx="1.2"/><path d="M7 6.5h2M11 6.5h2M7 9.5h2M11 9.5h2M8.5 17v-3.5h3V17"/>',
+  chat:      '<path d="M17 9.5c0 3.3-3.1 6-7 6a8 8 0 0 1-2.2-.3L4 16.5l1-2.8A5.7 5.7 0 0 1 3 9.5c0-3.3 3.1-6 7-6s7 2.7 7 6z"/>',
+  doc:       '<path d="M5 2.8h6.5L15 6.3V17a.7.7 0 0 1-.7.7H5a.7.7 0 0 1-.7-.7V3.5A.7.7 0 0 1 5 2.8z"/><path d="M11 2.9V6.5h3.8"/>',
+  grid:      '<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/>',
+  menu:      '<path d="M3 5.5h14M3 10h14M3 14.5h14"/>',
+  trash:     '<path d="M3.5 5.5h13M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5 5.5l.8 10.2a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9L15 5.5"/>',
+  edit:      '<path d="M13.2 3.6a1.7 1.7 0 0 1 2.4 2.4L6.4 15.2 3 16l.8-3.4z"/>',
+  star:      '<path d="M10 3.2l2.1 4.3 4.7.7-3.4 3.3.8 4.7L10 14l-4.2 2.2.8-4.7L3.2 8.2l4.7-.7z"/>',
+};
+
+function icon(name, size) {
+  const s = size || 20;
+  const d = ICONS[name] || "";
+  return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 20 20" fill="none" ' +
+    'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ' +
+    'aria-hidden="true">' + d + '</svg>';
+}
