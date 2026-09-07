@@ -243,3 +243,57 @@ const NAME_LOOKUP = {
   "0977889120": "GRACE TEMBO",
   "0021447190244": "CHANDA MWALE",
 };
+
+/* ---- Interbank payment rails (GET /reference/rails) ----------------
+   Zambia has three ways to move money to another bank, and they are not
+   interchangeable:
+
+     RTGS  Bank of Zambia's Zambian Interbank Payment and Settlement
+           System (ZIPSS). Settles one payment at a time in real time;
+           final and irrevocable. Used for high-value payments.
+     EFT   Cleared in batches through ZECHL's Direct Debit and Credit
+           Clearing (DDACC). Kwacha only, within Zambia only. Cheaper,
+           but not immediate.
+     NFS   ZECHL's National Financial Switch. Real-time interbank
+           transfers, available around the clock.
+
+   WARNING: `minAmount` / `maxAmount` below encode AB Bank's own routing
+   rule. The K50,000 split could not be confirmed from a public source,
+   and the NFS ceiling is Zanaco's published limit. Both must be
+   confirmed against AB Bank's own scheme rules before production —
+   they are here in one place so a single edit changes the whole app. */
+const RAILS = [
+  {
+    id: "rtgs",
+    name: "RTGS",
+    full: "Real Time Gross Settlement",
+    eta: "Within minutes",
+    best: "Payments of K50,000 and above",
+    detail: "Settled one payment at a time by the Bank of Zambia. Final and irrevocable once sent.",
+    availability: "Bank working hours",
+    minAmount: 50000,
+    maxAmount: null,
+  },
+  {
+    id: "eft",
+    name: "EFT",
+    full: "Electronic Funds Transfer",
+    eta: "A few hours, same working day",
+    best: "Everyday payments under K50,000",
+    detail: "Cleared in batches through the Zambia Electronic Clearing House. Kwacha, within Zambia only.",
+    availability: "Cut-off times apply",
+    minAmount: 0,
+    maxAmount: 49999.99,
+  },
+  {
+    id: "nfs",
+    name: "NFS",
+    full: "National Financial Switch",
+    eta: "Instantly",
+    best: "When it has to arrive now",
+    detail: "Real-time interbank transfer through the Zambia Electronic Clearing House.",
+    availability: "24 hours a day",
+    minAmount: 0,
+    maxAmount: 500000,
+  },
+];

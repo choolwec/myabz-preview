@@ -27,6 +27,7 @@ const S = {
   txFilter: "all",
   locFilter: "all",
   showBalances: true,
+  navScroll: 0,
   flow: null,
 };
 
@@ -74,6 +75,23 @@ function pendingCount() { return isBusiness() ? APPROVALS.length : 0; }
 function unreadCount() { return NOTIFICATIONS.filter(n => n.unread).length; }
 
 function bankByCode(code) { return BANKS.find(b => b.code === code); }
+function railById(id) { return RAILS.find(r => r.id === id) || null; }
+
+/* Does the amount fall inside what this rail will carry? Returns null when
+   it does, or a plain-language reason and a suggested alternative when not. */
+function railMismatch(rail, amount) {
+  const a = parseFloat(amount) || 0;
+  if (!rail || !a) return null;
+  if (rail.minAmount && a < rail.minAmount) {
+    return { reason: rail.name + " is for payments of " + amt(rail.minAmount, "ZMW") + " and above.",
+             suggest: railById("eft") };
+  }
+  if (rail.maxAmount != null && a > rail.maxAmount) {
+    return { reason: rail.name + " carries up to " + amt(rail.maxAmount, "ZMW") + " per payment.",
+             suggest: a >= 50000 ? railById("rtgs") : railById("nfs") };
+  }
+  return null;
+}
 
 /* Currency conversion between the customer's own accounts.
    The bank SELLS foreign currency to you when you buy it with kwacha,
@@ -791,7 +809,7 @@ function viewTransactions() {
       <div class="row row-wrap" style="gap:10px">
         <div class="search-wrap">${icon("search", 17)}
           <input class="input" placeholder="Search description or reference"
-            value="${esc(S.txSearch)}" oninput="S.txSearch=this.value;renderKeepFocus(this)">
+            data-k="tx-search" value="${esc(S.txSearch)}" oninput="S.txSearch=this.value;render()">
         </div>
         <div class="seg">
           ${[["all", "All"], ["in", "Money in"], ["out", "Money out"], ["pending", "Pending"]]
@@ -815,15 +833,6 @@ function groupedTx(list) {
     out += txRow(t);
   }
   return out;
-}
-
-function renderKeepFocus(el) {
-  const id = el.getAttribute("data-k") || "search";
-  el.setAttribute("data-k", id);
-  const pos = el.selectionStart;
-  render();
-  const next = document.querySelector('[data-k="' + id + '"]') || document.querySelector(".search-wrap .input");
-  if (next) { next.focus(); try { next.setSelectionRange(pos, pos); } catch (e) {} }
 }
 
 function exportModal() {
@@ -868,7 +877,7 @@ function viewTransfer() {
   const opts = [
     { k: "own", icon: "own", title: "Between my accounts", sub: "Move money instantly, no fee" },
     { k: "abbank", icon: "bank", title: "To an AB Bank account", sub: "Instant to any AB Bank customer" },
-    { k: "someone", icon: "transfer", title: "To another bank", sub: "Via the national switch — arrives in minutes" },
+    { k: "someone", icon: "transfer", title: "To another bank", sub: "Choose RTGS, EFT or NFS" },
     { k: "mobile", icon: "phone", title: "To a mobile money wallet", sub: "Airtel, MTN or Zamtel", isNew: true },
     { k: "swift", icon: "fx", title: "International transfer", sub: "SWIFT payment in USD, EUR or GBP" },
   ];
@@ -928,6 +937,9 @@ function startFlow(kind) {
     phone: "", saveTemplate: false, fxDir: "buy", fxPair: "USD/ZMW",
   };
   if (kind === "own") S.flow.toAcct = (accounts()[1] || accounts()[0]).id;
+  // A transfer to another bank has to pick a rail before anything else —
+  // RTGS, EFT and NFS behave differently and cost differently.
+  if (kind === "someone") { S.flow.rail = null; S.flow.step = "method"; }
   go("flow");
 }
 
@@ -971,8 +983,13 @@ function viewFlow() {
 
   if (f.step === "done") return flowReceipt();
 
-  const steps = ["Details", "Review", "Authorise"];
-  const idx = f.step === "form" ? 0 : (f.step === "review" ? 1 : 2);
+  const hasMethod = f.kind === "someone";
+  const steps = hasMethod
+    ? ["Method", "Details", "Review", "Authorise"]
+    : ["Details", "Review", "Authorise"];
+  const idx = hasMethod
+    ? (f.step === "method" ? 0 : f.step === "form" ? 1 : 2)
+    : (f.step === "form" ? 0 : 1);
 
   return `
   <div class="page-head">
@@ -984,9 +1001,10 @@ function viewFlow() {
   <div class="flow">
     <div class="stepper">
       ${steps.map((s, i) => `<span class="st ${i === idx ? "on" : ""} ${i < idx ? "done" : ""}">
-        <span class="n">${i < idx ? "✓" : i + 1}</span> ${s}</span>${i < 2 ? '<span class="bar"></span>' : ""}`).join("")}
+        <span class="n">${i < idx ? "✓" : i + 1}</span><span class="lbl">${esc(s)}</span></span>${
+        i < steps.length - 1 ? '<span class="bar"></span>' : ""}`).join("")}
     </div>
-    ${f.step === "form" ? flowForm() : flowReview()}
+    ${f.step === "method" ? flowMethod() : f.step === "form" ? flowForm() : flowReview()}
   </div>`;
 }
 
@@ -994,7 +1012,43 @@ function flowBack() {
   const f = S.flow;
   if (!f) return go("dashboard");
   if (f.step === "review") { f.step = "form"; return render(); }
+  if (f.step === "form" && f.kind === "someone") { f.step = "method"; return render(); }
   go(f.nav);
+}
+
+/* ---- method step: which interbank rail ---- */
+function flowMethod() {
+  return `
+    <p class="muted mb16">Payments to another bank can travel three ways. They differ in how
+    fast they arrive and what they cost.</p>
+
+    <div class="radio-cards mb16">
+      ${RAILS.map(r => `
+        <button class="radio-card" onclick="chooseRail('${r.id}')" style="align-items:flex-start">
+          <span class="tx-ico" style="margin-top:2px">${icon(
+            r.id === "rtgs" ? "bank" : r.id === "nfs" ? "transfer" : "scheduled", 18)}</span>
+          <span style="flex:1;min-width:0">
+            <span class="rc-title">${esc(r.name)} <span class="faint" style="font-weight:400">&middot; ${esc(r.full)}</span></span>
+            <span class="rc-sub" style="margin-top:3px">${esc(r.detail)}</span>
+            <span class="row row-wrap mt8" style="gap:6px">
+              <span class="pill pill-ok">${esc(r.eta)}</span>
+              <span class="pill pill-mute">${esc(r.best)}</span>
+              <span class="pill pill-mute">${esc(r.availability)}</span>
+            </span>
+          </span>
+          <span class="rc-right faint" style="margin-top:2px">${icon("chevron", 17)}</span>
+        </button>`).join("")}
+    </div>
+
+    <div class="fee-note">${icon("info", 16)}
+      <span>All three are free at the moment. When charges are introduced you will see the
+      cost of each before you choose.</span></div>`;
+}
+
+function chooseRail(id) {
+  S.flow.rail = id;
+  S.flow.step = "form";
+  render();
 }
 
 /* ---- form step ---- */
@@ -1167,7 +1221,7 @@ function flowForm() {
         <label>Amount to convert</label>
         <div class="amount-field">
           <span class="cur-tag">${esc(fromA.currency)}</span>
-          <input class="input num" inputmode="decimal" placeholder="0.00"
+          <input class="input num" inputmode="decimal" placeholder="0.00" data-k="fx-amount"
             value="${esc(f.amount)}" oninput="fset('amount',this.value);render()">
         </div>
         <div class="hint">Available ${amt(fromA.available, fromA.currency)}</div>
@@ -1201,7 +1255,22 @@ function flowForm() {
 
   const disabled = !flowValid();
   const tpl = f.fromTemplate ? TEMPLATES.find(t => t.id === f.fromTemplate) : null;
+  const rail = f.kind === "someone" ? railById(f.rail) : null;
+  const mismatch = rail ? railMismatch(rail, f.amount) : null;
   return `
+    ${rail ? `<div class="banner banner-info mb16">
+      <span class="b-ico">${icon("info", 18)}</span>
+      <div class="b-body"><b>Sending by ${esc(rail.name)}</b>
+        <p>${esc(rail.eta)} &middot; ${esc(rail.availability)}</p></div>
+      <button class="btn btn-ghost btn-sm" onclick="S.flow.step='method';render()">Change</button>
+    </div>` : ""}
+    ${mismatch ? `<div class="banner banner-warn mb16">
+      <span class="b-ico">${icon("warn", 18)}</span>
+      <div class="b-body"><b>${esc(mismatch.reason)}</b>
+        <p>Switch to ${esc(mismatch.suggest.name)} to send this amount &mdash; ${esc(mismatch.suggest.eta.toLowerCase())}.</p></div>
+      <button class="btn btn-secondary btn-sm" onclick="chooseRail('${mismatch.suggest.id}')">
+        Use ${esc(mismatch.suggest.name)}</button>
+    </div>` : ""}
     ${tpl ? `<div class="banner banner-info mb16">
       <span class="b-ico">${icon("templates", 18)}</span>
       <div class="b-body"><b>Paying ${esc(tpl.name)}</b>
@@ -1253,6 +1322,10 @@ function flowValid() {
   if (f.kind === "fx") {
     const toA = accounts().find(x => x.id === f.fxTo) || accounts().find(x => x.currency !== account(f.from).currency);
     return a > 0 && !!toA && a <= account(f.from).available;
+  }
+  if (f.kind === "someone") {
+    const rail = railById(f.rail);
+    return a > 0 && f.to.length > 5 && !!rail && !railMismatch(rail, f.amount);
   }
   return a > 0 && f.to.length > 5;
 }
@@ -1345,7 +1418,13 @@ function flowSummary() {
     }
     rows.push(["Account number", '<span class="mono">' + esc(f.to) + "</span>"]);
     rows.push(["Recipient", esc(lookupName(f.to) || "Name not returned")]);
-    rows.push(["Arrives", f.kind === "abbank" ? "Immediately" : (f.kind === "swift" ? "2–3 working days" : "Within minutes")]);
+    const rail = railById(f.rail);
+    if (f.kind === "someone" && rail) {
+      rows.push(["Sent by", esc(rail.name) + " &middot; " + esc(rail.full)]);
+      rows.push(["Arrives", esc(rail.eta)]);
+    } else {
+      rows.push(["Arrives", f.kind === "abbank" ? "Immediately" : "2–3 working days"]);
+    }
   }
 
   if (f.ref) rows.push(["Reference", esc(f.ref)]);
@@ -2051,17 +2130,49 @@ function startFlowSilently(kind) {
   }
 }
 
+/* State that belongs to the DOM rather than the app: where the sidebar was
+   scrolled to, and which field the caret was in. render() replaces the whole
+   tree, so both have to be captured before and restored after. */
+function captureUiState() {
+  const nav = document.querySelector(".sidebar-nav");
+  if (nav) S.navScroll = nav.scrollTop;
+
+  const el = document.activeElement;
+  if (el && el.getAttribute && el.getAttribute("data-k")) {
+    let start = null, end = null;
+    try { start = el.selectionStart; end = el.selectionEnd; } catch (e) { /* not a text input */ }
+    return { key: el.getAttribute("data-k"), start, end };
+  }
+  return null;
+}
+
+function restoreUiState(focus) {
+  const nav = document.querySelector(".sidebar-nav");
+  if (nav && S.navScroll) nav.scrollTop = S.navScroll;
+
+  if (!focus) return;
+  const el = document.querySelector('[data-k="' + focus.key + '"]');
+  if (!el) return;
+  el.focus();
+  if (focus.start != null) {
+    try { el.setSelectionRange(focus.start, focus.end); } catch (e) { /* e.g. type=date */ }
+  }
+}
+
 function render() {
+  const focus = captureUiState();
   const root = $("#root");
   if (!S.signedIn) {
     // Reachable before sign-in: password reset and the terms of use.
-    if (S.route === "reset-password") { root.innerHTML = viewResetPassword(); return; }
-    if (S.route === "terms-of-use") { root.innerHTML = viewTerms(); return; }
+    if (S.route === "reset-password") { root.innerHTML = viewResetPassword(); restoreUiState(focus); return; }
+    if (S.route === "terms-of-use") { root.innerHTML = viewTerms(); restoreUiState(focus); return; }
     root.innerHTML = viewAuth();
+    restoreUiState(focus);
     return;
   }
-  if (S.route === "activate") { root.innerHTML = viewActivate(); return; }
+  if (S.route === "activate") { root.innerHTML = viewActivate(); restoreUiState(focus); return; }
   root.innerHTML = shell(routeInner());
+  restoreUiState(focus);
 }
 
 /* boot */

@@ -50,7 +50,7 @@ function viewTemplateForm() {
 
       <div class="field">
         <label>Name for this template</label>
-        <input class="input" maxlength="40" placeholder="e.g. Kabwe Hardware Ltd"
+        <input class="input" maxlength="40" placeholder="e.g. Kabwe Hardware Ltd" data-k="tpl-name"
           value="${esc(t.name)}" oninput="TPL.name=this.value">
         <div class="hint">Only you see this name. It makes the beneficiary easy to find later.</div>
       </div>
@@ -64,14 +64,14 @@ function viewTemplateForm() {
         </div>
         <div class="field">
           <label>Account number</label>
-          <input class="input mono" inputmode="numeric" placeholder="0100224419"
+          <input class="input mono" inputmode="numeric" placeholder="0100224419" data-k="tpl-account"
             value="${esc(t.accountNumber)}" oninput="tplSet('accountNumber',this.value)">
         </div>
       ` : `
         <div class="field">
           <label>Mobile number</label>
           <div class="input-wrap">
-            <input class="input" inputmode="tel" maxlength="13" placeholder="097 123 4567"
+            <input class="input" inputmode="tel" maxlength="13" placeholder="097 123 4567" data-k="tpl-phone"
               value="${esc(t.accountNumber)}" oninput="tplSet('accountNumber',this.value)" style="padding-right:110px">
             <div class="trail">${m ? mnoChip(m) : ""}</div>
           </div>
@@ -165,7 +165,7 @@ function viewScheduleForm() {
     <div class="card card-pad mb16">
       <div class="field">
         <label>What is this for?</label>
-        <input class="input" maxlength="40" placeholder="e.g. Rent — Kabulonga"
+        <input class="input" maxlength="40" placeholder="e.g. Rent — Kabulonga" data-k="sch-name"
           value="${esc(s.name)}" oninput="SCH.name=this.value">
       </div>
 
@@ -193,7 +193,7 @@ function viewScheduleForm() {
         <label>Amount</label>
         <div class="amount-field">
           <span class="cur-tag">ZMW</span>
-          <input class="input num" inputmode="decimal" placeholder="0.00"
+          <input class="input num" inputmode="decimal" placeholder="0.00" data-k="sch-amount"
             value="${esc(s.amount)}" oninput="SCH.amount=this.value">
         </div>
       </div>
