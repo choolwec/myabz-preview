@@ -74,6 +74,37 @@ function pendingCount() { return isBusiness() ? APPROVALS.length : 0; }
 function unreadCount() { return NOTIFICATIONS.filter(n => n.unread).length; }
 
 function bankByCode(code) { return BANKS.find(b => b.code === code); }
+
+/* Currency conversion between the customer's own accounts.
+   The bank SELLS foreign currency to you when you buy it with kwacha,
+   and BUYS it back when you convert the other way — so the applicable
+   rate depends on the direction. Non-kwacha pairs cross through ZMW. */
+function fxRateFor(pair) {
+  const r = FX_RATES.find(x => x.pair === pair);
+  return r || null;
+}
+function fxConvert(fromCur, toCur, amount) {
+  const amt = parseFloat(amount) || 0;
+  if (!amt || fromCur === toCur) return null;
+
+  // kwacha -> foreign: you buy it, the bank sells at its sell rate
+  if (fromCur === "ZMW") {
+    const r = fxRateFor(toCur + "/ZMW");
+    if (!r) return null;
+    return { rate: r.sell, result: amt / r.sell, basis: "1 " + toCur + " = K" + r.sell.toFixed(4) };
+  }
+  // foreign -> kwacha: you sell it, the bank buys at its buy rate
+  if (toCur === "ZMW") {
+    const r = fxRateFor(fromCur + "/ZMW");
+    if (!r) return null;
+    return { rate: r.buy, result: amt * r.buy, basis: "1 " + fromCur + " = K" + r.buy.toFixed(4) };
+  }
+  // foreign -> foreign: cross through kwacha
+  const a = fxRateFor(fromCur + "/ZMW"), b = fxRateFor(toCur + "/ZMW");
+  if (!a || !b) return null;
+  const cross = a.buy / b.sell;
+  return { rate: cross, result: amt * cross, basis: "1 " + fromCur + " = " + cross.toFixed(4) + " " + toCur };
+}
 function mnoFor(phone) {
   const p = String(phone || "").replace(/\D/g, "").replace(/^260/, "0");
   const pre = p.slice(0, 3);
@@ -886,7 +917,7 @@ const FLOW_DEF = {
   swift:   { nav: "transfer", title: "International transfer", route: "transfer/to-someones-account" },
   utility: { nav: "utility",  title: "Pay a bill", route: "transfer/utility" },
   airtime: { nav: "airtime",  title: "Airtime & data", route: "transfer/airtime" },
-  fx:      { nav: "fx",       title: "Foreign exchange", route: "fx" },
+  fx:      { nav: "fx",       title: "Convert currency", route: "fx" },
 };
 
 function startFlow(kind) {
@@ -1109,33 +1140,63 @@ function flowForm() {
     }
 
   } else if (f.kind === "fx") {
-    const r = FX_RATES.find(x => x.pair === f.fxPair) || FX_RATES[0];
-    const rate = f.fxDir === "buy" ? r.sell : r.buy;
-    const val = parseFloat(f.amount) || 0;
+    const fromA = account(f.from);
+    const targets = accounts().filter(a => a.currency !== fromA.currency);
+    const toA = accounts().find(a => a.id === f.fxTo) || targets[0];
+    const conv = toA ? fxConvert(fromA.currency, toA.currency, f.amount) : null;
+
     body = `
-      <div class="field"><label>What do you want to do?</label>
-        <div class="seg">
-          <button class="${f.fxDir === "buy" ? "active" : ""}" onclick="fsetRender('fxDir','buy')">Buy foreign currency</button>
-          <button class="${f.fxDir === "sell" ? "active" : ""}" onclick="fsetRender('fxDir','sell')">Sell foreign currency</button>
-        </div></div>
-      <div class="field"><label>Currency</label>
-        <select class="select" onchange="fsetRender('fxPair',this.value)">
-          ${FX_RATES.map(x => `<option value="${x.pair}" ${x.pair === f.fxPair ? "selected" : ""}>${esc(x.pair)}</option>`).join("")}
-        </select></div>
-      ${fromField}
-      <div class="field"><label>Amount in ${esc(f.fxPair.split("/")[0])}</label>
-        <div class="amount-field"><span class="cur-tag">${esc(f.fxPair.split("/")[0])}</span>
-          <input class="input num" inputmode="decimal" placeholder="0.00" value="${esc(f.amount)}" oninput="fset('amount',this.value);flowLive()">
-        </div></div>
+      <div class="field">
+        <label>Convert from</label>
+        <select class="select" onchange="fset('fxTo','');fsetRender('from',this.value)">
+          ${accounts().map(a => `<option value="${a.id}" ${a.id === f.from ? "selected" : ""}>
+            ${esc(a.nickname)} — ${esc(a.currency)} ${money(a.available)} available</option>`).join("")}
+        </select>
+      </div>
+
+      ${targets.length ? `
+      <div class="field">
+        <label>Convert to</label>
+        <select class="select" onchange="fsetRender('fxTo',this.value)">
+          ${targets.map(a => `<option value="${a.id}" ${toA && a.id === toA.id ? "selected" : ""}>
+            ${esc(a.nickname)} — ${esc(a.currency)} ${money(a.balance)}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Amount to convert</label>
+        <div class="amount-field">
+          <span class="cur-tag">${esc(fromA.currency)}</span>
+          <input class="input num" inputmode="decimal" placeholder="0.00"
+            value="${esc(f.amount)}" oninput="fset('amount',this.value);render()">
+        </div>
+        <div class="hint">Available ${amt(fromA.available, fromA.currency)}</div>
+      </div>
+
       <div class="card card-pad" style="background:var(--surface-2)">
+        <div class="row" style="justify-content:space-between;align-items:baseline">
+          <span class="muted small">You convert</span>
+          <span class="b num">${amt(parseFloat(f.amount) || 0, fromA.currency)}</span>
+        </div>
+        <div class="center" style="margin:10px 0;color:var(--ink-4)">${icon("arrowDown", 18)}</div>
+        <div class="row" style="justify-content:space-between;align-items:baseline">
+          <span class="muted small">${esc(toA.nickname)} receives</span>
+          <span class="b num" style="font-size:22px;color:var(--ok)">
+            ${conv ? amt(conv.result, toA.currency) : cur(toA.currency) + "0.00"}</span>
+        </div>
+        <div class="hr" style="margin:12px 0"></div>
         <div class="row" style="justify-content:space-between">
-          <span class="muted small">Rate applied</span><span class="b num">${rate.toFixed(4)}</span></div>
-        <div class="hr" style="margin:10px 0"></div>
-        <div class="row" style="justify-content:space-between">
-          <span class="muted small">${f.fxDir === "buy" ? "You pay" : "You receive"}</span>
-          <span class="b num" style="font-size:19px">K${money(val * rate)}</span></div>
-        <div class="tiny faint mt8">Indicative. The rate is fixed when you authorise, and holds for 60 seconds.</div>
-      </div>`;
+          <span class="muted small">Rate</span>
+          <span class="b num small">${conv ? esc(conv.basis) : "—"}</span>
+        </div>
+        <div class="tiny faint mt8">The rate is fixed when you authorise and held for 60 seconds.</div>
+      </div>`
+      : `<div class="banner banner-warn">
+          <span class="b-ico">${icon("info", 18)}</span>
+          <div class="b-body"><b>You need a second currency account</b>
+            <p>To convert, you need an account in another currency to hold it in.</p></div>
+          <button class="btn btn-secondary btn-sm" onclick="go('products')">Open one</button>
+        </div>`}`;
   }
 
   const disabled = !flowValid();
@@ -1189,7 +1250,10 @@ function flowValid() {
   if (f.kind === "mobile") return a > 0 && !!mnoFor(f.phone);
   if (f.kind === "airtime") return a > 0 && !!mnoFor(f.phone);
   if (f.kind === "utility") return a > 0 && f.to.length > 3;
-  if (f.kind === "fx") return a > 0;
+  if (f.kind === "fx") {
+    const toA = accounts().find(x => x.id === f.fxTo) || accounts().find(x => x.currency !== account(f.from).currency);
+    return a > 0 && !!toA && a <= account(f.from).available;
+  }
   return a > 0 && f.to.length > 5;
 }
 
@@ -1261,13 +1325,14 @@ function flowSummary() {
     rows.push(["Network", m ? esc(m.name) : "—"]);
     rows.push(["Product", f.bundleKind === "data" && bd ? esc(bd.label) + " &middot; " + esc(bd.validity) : "Airtime top-up"]);
   } else if (f.kind === "fx") {
-    const r = FX_RATES.find(x => x.pair === f.fxPair) || FX_RATES[0];
-    const rate = f.fxDir === "buy" ? r.sell : r.buy;
-    toLabel = f.fxDir === "buy" ? "your " + f.fxPair.split("/")[0] + " account" : "your kwacha account";
-    rows.push(["Instruction", f.fxDir === "buy" ? "Buy " + esc(f.fxPair.split("/")[0]) : "Sell " + esc(f.fxPair.split("/")[0])]);
-    rows.push(["Rate", '<span class="num">' + rate.toFixed(4) + "</span>"]);
-    rows.push(["Kwacha value", '<span class="num">K' + money(a * rate) + "</span>"]);
-    currency = f.fxPair.split("/")[0];
+    const toA = accounts().find(x => x.id === f.fxTo) || accounts().find(x => x.currency !== from.currency);
+    const conv = toA ? fxConvert(from.currency, toA.currency, f.amount) : null;
+    toLabel = toA ? toA.nickname : "your other account";
+    rows.push(["Convert to", toA ? esc(toA.nickname) + " &middot; " + maskAcc(toA.number) : "—"]);
+    rows.push(["Rate", conv ? esc(conv.basis) : "—"]);
+    rows.push(["You receive", conv
+      ? '<span class="num" style="color:var(--ok)">' + amt(conv.result, toA.currency) + "</span>" : "—"]);
+    rows.push(["Arrives", "Immediately"]);
   } else {
     const b = bankByCode(f.bank);
     toLabel = lookupName(f.to) || f.to;
@@ -1313,10 +1378,10 @@ function flowReceipt() {
     <div class="receipt">
       <div class="tick" style="${held ? "background:var(--warn-050);color:var(--warn)" : ""}">
         ${icon(held ? "clock" : "checkBig", 30)}</div>
-      <h2>${held ? "Sent for approval" : "Payment sent"}</h2>
+      <h2>${held ? "Sent for approval" : (f.kind === "fx" ? "Currency converted" : "Payment sent")}</h2>
       <p class="sub">${held
         ? "It will be released once another mandate holder approves it."
-        : "The money is on its way."}</p>
+        : (f.kind === "fx" ? "The converted amount is in your account." : "The money is on its way.")}</p>
 
       <div class="amt-big num"><span class="cur">${esc(d.currency)}</span>${money(d.amount)}</div>
       <p class="sub">to ${esc(d.toLabel)}</p>
@@ -1680,8 +1745,8 @@ function viewFx() {
   return `
   <div class="page-head">
     <div class="page-head-row">
-      <div><h1>Foreign exchange</h1><p>Buy and sell currency at today&rsquo;s rates. <span class="pill pill-new">New</span></p></div>
-      <div class="actions"><button class="btn btn-cta btn-sm" onclick="startFlow('fx')">Buy or sell</button></div>
+      <div><h1>Foreign exchange</h1><p>Convert between your own accounts at today&rsquo;s rates. <span class="pill pill-new">New</span></p></div>
+      <div class="actions"><button class="btn btn-cta btn-sm" onclick="startFlow('fx')">Convert currency</button></div>
     </div>
   </div>
 
@@ -1700,7 +1765,7 @@ function viewFx() {
           <td class="r num">${r.sell.toFixed(4)}</td>
           <td class="r num" style="color:${r.change >= 0 ? "var(--ok)" : "var(--err)"}">
             ${r.change >= 0 ? "+" : ""}${r.change.toFixed(2)}</td>
-          <td class="r"><button class="btn btn-secondary btn-sm" onclick="startFlow('fx')">Trade</button></td>
+          <td class="r"><button class="btn btn-secondary btn-sm" onclick="startFlow('fx')">Convert</button></td>
         </tr>`).join("")}
         </tbody>
       </table>
@@ -1718,10 +1783,15 @@ function viewFx() {
       <button class="btn btn-secondary btn-block mt16" onclick="go('products')">Open a currency account</button>
     </div>
     <div class="card card-pad">
+      <h3 class="mt0 mb8" style="font-size:15.5px">Convert your money</h3>
+      <p class="muted small">Move between your kwacha and foreign currency accounts at the rates above.
+      The converted amount lands in the account you choose and stays in that currency.</p>
+      <button class="btn btn-primary btn-block mt16" onclick="startFlow('fx')">Convert currency</button>
+      <div class="hr"></div>
       <h3 class="mt0 mb8" style="font-size:15.5px">Sending money abroad?</h3>
       <p class="muted small">International payments are sent by SWIFT and usually arrive in two to three working days.
       Correspondent bank charges may apply and are always shown before you authorise.</p>
-      <button class="btn btn-primary btn-block mt16" onclick="startFlow('swift')">Make an international transfer</button>
+      <button class="btn btn-secondary btn-block mt16" onclick="startFlow('swift')">Make an international transfer</button>
     </div>
   </div>`;
 }
