@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found — MyABZ preview</title>
+<meta name="robots" content="noindex">
+<!--
+  GitHub Pages serves this file, at the repository root, for every path it
+  cannot find on a project site. It does NOT look for a 404.html inside a
+  subdirectory, which is why app/404.html never did anything.
+
+  The interface routes in the browser, so refreshing or bookmarking a page
+  inside it asks the server for a path that does not exist on disk. This
+  sends those back into the app.
+
+  The route is not carried across on purpose. The session is held in memory
+  only, so a refresh signs the customer out either way and the app opens at
+  sign-in regardless — reconstructing the route would just be theatre.
+-->
+<script>
+  (function () {
+    var app = "/myabz-preview/app/";
+    if (location.pathname.indexOf(app) === 0) location.replace(app);
+  })();
+</script>
+<style>
+  :root { color-scheme: light }
+  *, *::before, *::after { box-sizing: border-box }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: #F0F3F7; color: #16182F; padding: 24px;
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  .box {
+    background: #fff; border: 1px solid #DFE3EC; border-radius: 14px;
+    padding: 32px 28px; max-width: 420px; width: 100%; text-align: center;
+    box-shadow: 0 2px 4px rgba(22,24,47,.06), 0 8px 20px -10px rgba(22,24,47,.16);
+  }
+  img { height: 34px; width: auto; display: block; margin: 0 auto 20px }
+  h1 { font-size: 20px; margin: 0 0 8px }
+  p { color: #6A7389; margin: 0 0 22px }
+  a {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px; padding: 0 20px; border-radius: 8px;
+    background: #00739F; color: #fff; text-decoration: none; font-weight: 600;
+  }
+  a:hover { background: #005F82 }
+</style>
+</head>
+<body>
+  <div class="box">
+    <img src="/myabz-preview/logo.png" alt="AB Bank">
+    <h1>We can&rsquo;t find that page</h1>
+    <p>The address may have changed, or the link that brought you here may be out of date.</p>
+    <a href="/myabz-preview/">Back to the preview</a>
+  </div>
+</body>
+</html>
