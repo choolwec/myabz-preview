@@ -3,13 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#00375B" />
-  <link rel="icon" type="image/png" href="/myabz-preview/app/assets/favicon-64.png" />
+  <meta name="theme-color" content="#00527A" />
+
   <title>MyABZ — AB Bank Zambia</title>
-  <script type="module" crossorigin src="/myabz-preview/app/assets/index-uW6dvsou.js"></script>
-  <link rel="stylesheet" crossorigin href="/myabz-preview/app/assets/index-C2Zs5lNE.css">
+  <meta name="description" content="MyABZ is AB Bank Zambia's online banking service. Sign in to see your balances, move money, pay bills and manage your accounts." />
+
+  <!-- A signed-in banking portal is not a discovery surface. The bank's
+       public presence is abbank.co.zm; nothing here should be indexed.
+       robots.txt says the same, in the place crawlers look first. -->
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- SVG scales to any size; the PNG is for the browsers and platforms
+       that still will not take one. -->
+  <link rel="icon" type="image/svg+xml" href="/myabz-preview/app/assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="64x64" href="/myabz-preview/app/assets/favicon-64.png" />
+  <link rel="apple-touch-icon" href="/myabz-preview/app/assets/favicon-64.png" />
+
+  <!-- Only the sign-in page is ever shared as a link, so this is the one
+       card that exists. Nothing behind authentication has one. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="AB Bank Zambia" />
+  <meta property="og:title" content="MyABZ — AB Bank Zambia online banking" />
+  <meta property="og:description" content="Sign in to see your balances, move money, pay bills and manage your accounts." />
+  <meta property="og:image" content="/assets/og-card.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:alt" content="AB Bank Zambia — your partner in growth" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <script type="module" crossorigin src="/myabz-preview/app/assets/index-DfnYIIgS.js"></script>
+  <link rel="modulepreload" crossorigin href="/myabz-preview/app/assets/vendor-react-8uniHywY.js">
+  <link rel="stylesheet" crossorigin href="/myabz-preview/app/assets/index-BqHGLzjQ.css">
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root"></div>
 </body>
 </html>

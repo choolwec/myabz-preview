@@ -1,0 +1,5 @@
+# MyABZ is AB Bank Zambia's signed-in online banking portal. There is
+# nothing here to index: one public page, and everything else behind
+# authentication. The bank's public presence is www.abbank.co.zm.
+User-agent: *
+Disallow: /
